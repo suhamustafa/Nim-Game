@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classic Nim Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: url('tow.jpg') no-repeat center center fixed;
+            background-size: cover;
+            margin: 0;
+        }
+
+        #game-container {
+            display: flex;
+            justify-content: space-between;
+            width: 60%; 
+            background-color: rgba(0, 0, 0, 0.4); 
+            padding: 20px;
+            border-radius: 10px;
+            flex-direction: column; 
+        }
+
+        #input-section {
+            margin-bottom: 20px; 
+        }
+
+        .input-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        label {
+            font-size: 20px;
+            margin-right: 5px;
+            color: #FFA500 ;
+        }
+
+        input {
+            width: 60px; 
+            padding: 8px; 
+            font-size: 14px;
+        }
+
+        #game-board {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .row {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end; 
+        }
+
+        .row-number {
+            font-size: 20px;
+            margin-right: 10px;
+            color: #FFA500;
+        }
+
+        .stick {
+            width: 10px; 
+            height: 50px; 
+            color:#FFA500 ;
+            margin: 0 2px;
+            cursor: pointer;
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .stick:hover {
+            transform: scale(1.2); 
+            color:#FFA500;
+        }
+
+        #message {
+            margin-top: 20px;
+            font-size: 25px;
+          color: #FFA500;
+        }
+
+        #turn-label {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #FFA500;
+        }
+
+        #reset-button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #FFA500 ;
+            border: none;
+            color: white;
+            align-self: flex-start; 
+        }
+
+        #reset-button:hover {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="input-section">
+            <div id="turn-label"></div>
+            <div class="input-row">
+                <label for="row1">Row 1:</label>
+                <input type="number" id="row1" min="0" max="15">
+            </div>
+            <div class="input-row">
+                <label for="row2">Row 2:</label>
+                <input type="number" id="row2" min="0" max="15">
+            </div>
+            <div class="input-row">
+                <label for="row3">Row 3:</label>
+                <input type="number" id="row3" min="0" max="15">
+            </div>
+            <div class="input-row">
+                <label for="row4">Row 4:</label>
+                <input type="number" id="row4" min="0" max="15">
+            </div>
+            <button id="start-button" onclick="startGame()">Start Game</button>
+            <button id="reset-button" onclick="resetGame()">Restart Game</button>
+        </div>
+
+        <div id="game-board"></div>
+
+        <div id="message"></div>
+    </div>
+
+    <script>
+        let rows = [4, 3, 7, 1]; 
+        let currentPlayer = 1; 
+
+        function startGame() {
+            rows = [
+                parseInt(document.getElementById('row1').value) || 0,
+                parseInt(document.getElementById('row2').value) || 0,
+                parseInt(document.getElementById('row3').value) || 0,
+                parseInt(document.getElementById('row4').value) || 0,
+            ];
+
+            const totalSticks = rows.reduce((total, sticks) => total + sticks, 0);
+
+            if (totalSticks > 15) {
+                alert('Total sticks cannot exceed 15.');
+                return;
+            }
+
+            document.getElementById('start-button').style.display = 'none';
+            initializeGame();
+        }
+
+        function initializeGame() {
+            const gameBoard = document.getElementById('game-board');
+            gameBoard.innerHTML = '';
+
+            for (let i = 0; i < rows.length; i++) {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'row';
+
+                const rowNumberDiv = document.createElement('div');
+                rowNumberDiv.className = 'row-number';
+                rowNumberDiv.innerText = `Row ${i + 1}:`;
+                rowDiv.appendChild(rowNumberDiv);
+
+                const margin = (rows.length - i - 1) * 20; 
+
+                for (let j = 0; j < rows[i]; j++) {
+                    const stickDiv = document.createElement('div');
+                    stickDiv.className = 'stick';
+                    stickDiv.style.width = '10px'; 
+                    stickDiv.style.height = '50px'; 
+                    stickDiv.style.backgroundColor = ' #ff6f00';
+                    stickDiv.style.margin = `0 2px`;
+                    stickDiv.style.cursor = 'pointer';
+                    stickDiv.style.transition = 'transform 0.2s ease-in-out';
+                    stickDiv.addEventListener('click', () => removeStick(i));
+                    rowDiv.appendChild(stickDiv);
+                }
+
+                gameBoard.appendChild(rowDiv);
+            }
+
+            updateMessage();
+            updateTurnLabel();
+        }
+
+        function removeStick(row) {
+            if (rows[row] > 0) {
+                rows[row]--;
+                if (checkForWinner()) {
+                    updateMessage(`Player ${currentPlayer} wins!`);
+                } else {
+                    switchPlayer();
+                    initializeGame(); 
+                }
+            }
+        }
+
+        function switchPlayer() {
+            currentPlayer = 3 - currentPlayer; 
+        }
+
+        function checkForWinner() {
+            return rows.every((sticks) => sticks === 0);
+        }
+
+        function updateMessage(msg) {
+            document.getElementById('message').innerText = msg || `Player ${currentPlayer}'s turn`;
+        }
+
+        function updateTurnLabel() {
+            document.getElementById('turn-label').innerText = `Player ${currentPlayer}'s Turn`;
+        }
+
+        function resetGame() {
+            document.getElementById('start-button').style.display = 'block';
+            document.getElementById('row1').value = '';
+            document.getElementById('row2').value = '';
+            document.getElementById('row3').value = '';
+            document.getElementById('row4').value = '';
+            currentPlayer = 1; 
+            initializeGame();
+        }
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+

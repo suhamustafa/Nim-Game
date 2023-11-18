@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: url('dd.jpg') no-repeat center center fixed;
+            background-size: cover;
+        }
+
+        #game-container {
+            text-align: center;
+            background-color: rgba(0, 0, 0, 0.6 );
+            padding: 30px; 
+            border-radius: 15px; 
+            max-width: 500px; 
+            margin: auto;
+        }
+
+        .row {
+            margin-bottom: 20px; 
+        }
+
+        .stick {
+            display: inline-block;
+            width: 20px; 
+            height: 100px; 
+            background-color: #FFA500;
+            margin: 4px; 
+            cursor: pointer;
+        }
+
+        label, select, button {
+            font-size: 30px; 
+            color: #FFA500;
+        }
+
+        input {
+            font-size: 18px; 
+            width: 60px; 
+        }
+    </style>
+    <title>Nim Game</title>
+</head>
+<body>
+    <div id="game-container">
+        <form id="game-form">
+            <div class="row">
+                <label>
+                    Row 1:
+                    <input type="number" name="row1" min="0" max="10" value="0">
+                </label>
+            </div>
+            <div class="row">
+                <label>
+                    Row 2:
+                    <input type="number" name="row2" min="0" max="10" value="0">
+                </label>
+            </div>
+            <div class="row">
+                <label>
+                    Row 3:
+                    <input type="number" name="row3" min="0" max="10" value="0">
+                </label>
+            </div>
+            <div class="row">
+                <label>
+                    Row 4:
+                    <input type="number" name="row4" min="0" max="10" value="0">
+                </label>
+            </div>
+            <label>
+                Difficulty:
+                <select name="difficulty" style="width: 100px;"> 
+                    <option value="easy">Easy</option>
+                    <option value="medium">Medium</option>
+                    <option value="hard">Hard</option>
+                </select>
+            </label>
+            <br>
+            <button type="button" onclick="startGame()">Start Game</button>
+        </form>
+    </div>
+    <script>
+     document.addEventListener('DOMContentLoaded', () => {
+    let selectedRows = [0, 0, 0, 0];
+    let selectedDifficulty = 'easy'; 
+    const gameContainer = document.getElementById('game-container');
+    const gameForm = document.getElementById('game-form');
+
+    gameForm.addEventListener('change', (event) => {
+        const inputName = event.target.name;
+        const inputValue = (inputName === 'difficulty') ? event.target.value : parseInt(event.target.value, 10);
+
+        if (inputName.startsWith("row")) {
+            const rowIndex = parseInt(inputName.charAt(inputName.length - 1)) - 1;
+            selectedRows[rowIndex] = Math.max(inputValue, 0); 
+        } else if (inputName === 'difficulty') {
+            selectedDifficulty = inputValue;
+        }
+    });
+
+    window.startGame = () => {
+        gameContainer.innerHTML = '';
+        initializeGame(selectedRows, selectedDifficulty);
+    };
+
+    const createRow = (stickCount) => {
+        const row = document.createElement('div');
+        row.classList.add('row');
+
+        const label = document.createElement('label');
+        label.textContent = `Row: ${stickCount}`;
+
+        const sticksContainer = document.createElement('div');
+        sticksContainer.classList.add('sticks');
+
+        row.appendChild(label);
+        row.appendChild(sticksContainer);
+
+        for (let i = 0; i < stickCount; i++) {
+            const stick = document.createElement('div');
+            stick.classList.add('stick');
+            stick.addEventListener('click', () => removeStick(stick));
+            sticksContainer.appendChild(stick);
+        }
+
+        return row;
+    };
+
+    const removeStick = (stick) => {
+        stick.parentNode.removeChild(stick);
+
+        if (document.querySelectorAll('.stick').length === 0) {
+            alert('Game Over! You win!');
+            resetGame();
+        } else {
+            const sticks = document.querySelectorAll('.stick');
+            const randomStick = sticks[Math.floor(Math.random() * sticks.length)];
+            randomStick.parentNode.removeChild(randomStick);
+
+            if (document.querySelectorAll('.stick').length === 0) {
+                alert('Game Over! AI wins!');
+                resetGame();
+            } else {
+                
+                const aiMove = findBestMove(selectedRows, selectedDifficulty);
+                const aiRow = document.querySelectorAll('.row')[aiMove[0]];
+                const aiStick = aiRow.querySelector('.stick');
+                aiRow.querySelector('input').value = aiMove[1];
+                aiStick.parentNode.removeChild(aiStick);
+            }
+        }
+    };
+
+    const resetGame = () => {
+        gameForm.reset();
+    };
+
+    const initializeGame = (rows, difficulty) => {
+        rows.forEach((stickCount) => {
+            const row = createRow(stickCount);
+            gameContainer.appendChild(row);
+        });
+
+        console.log("Difficulty level:", difficulty);
+        
+    };
+
+    function calculateNimSum(rows) {
+        let nimSum = 0;
+        for (let i = 0; i < rows.length; i++) {
+            nimSum ^= rows[i];
+        }
+        return nimSum;
+    }
+
+    function evaluatePosition(rows) {
+        const nimSum = calculateNimSum(rows);
+        return nimSum === 0 ? 0 : 1;
+    }
+
+    function isTerminal(rows) {
+        return rows.every(count => count === 0);
+    }
+
+    function alphaBeta(rows, depth, alpha, beta, maximizingPlayer) {
+        if (depth === 0 || isTerminal(rows)) {
+            return evaluatePosition(rows);
+        }
+
+        if (maximizingPlayer) {
+            let maxEval = -Infinity;
+            for (let i = 0; i < rows.length; i++) {
+                for (let j = 1; j <= rows[i]; j++) {
+                    if (rows[i] - j >= 0) {
+                        const newRows = [...rows];
+                        newRows[i] -= j;
+                        const eval = alphaBeta(newRows, depth - 1, alpha, beta, false);
+                        maxEval = Math.max(maxEval, eval);
+                        alpha = Math.max(alpha, eval);
+                        if (beta <= alpha) {
+                            break;
+                        }
+                    }
+                }
+            }
+            return maxEval;
+        } else {
+            let minEval = Infinity;
+            for (let i = 0; i < rows.length; i++) {
+                for (let j = 1; j <= rows[i]; j++) {
+                    if (rows[i] - j >= 0) {
+                        const newRows = [...rows];
+                        newRows[i] -= j;
+                        const eval = alphaBeta(newRows, depth - 1, alpha, beta, true);
+                        minEval = Math.min(minEval, eval);
+                        beta = Math.min(beta, eval);
+                        if (beta <= alpha) {
+                            break;
+                        }
+                    }
+                }
+            }
+            return minEval;
+        }
+    }
+
+    function findBestMove(rows, difficulty) {
+        let bestMove = -1;
+        let bestValue = -Infinity;
+
+        for (let i = 0; i < rows.length; i++) {
+            for (let j = 1; j <= rows[i]; j++) {
+                if (rows[i] - j >= 0) {
+                    const newRows = [...rows];
+                    newRows[i] -= j;
+                    const moveValue = alphaBeta(newRows, difficulty === 'hard' ? 4 : 2, -Infinity, Infinity, false);
+                    if (moveValue > bestValue) {
+                        bestValue = moveValue;
+                        bestMove = i;
+                    }
+                }
+            }
+        }
+
+        return [bestMove, Math.max(1, rows[bestMove])];
+    }
+});
+</script>
+</body>
+</html>

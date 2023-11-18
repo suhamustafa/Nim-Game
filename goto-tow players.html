@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Got It</title>
+  <style>
+    body {
+      font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+      font-size: x-large;
+      font-style: italic;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: url('ow2.jpg') no-repeat center center fixed;
+            background-size: cover;
+
+    }
+
+    #game-container {
+      text-align: left;
+      background-color: rgba(0, 0, 0, 0.8); /* Transparent white */
+
+      padding: 20px;
+      border-radius: 10px;
+    }
+
+    .number-square {
+      display: inline-block;
+      width: 50px;
+      height: 50px;
+      background-color: #ffcccb; /* Light pink */
+      margin: 5px;
+      cursor: pointer;
+      line-height: 50px;
+      font-size: 18px;
+      text-align: center;
+      border-radius: 5px;
+      transition: background-color 0.3s, transform 0.3s;
+    }
+
+    .number-square:hover {
+      background-color: #943a7c; 
+    }
+
+    .number-square.clicked {
+      background-color: #943a7c; 
+      transform: scale(1.1); 
+    }
+
+    #result {
+      margin-top: 20px;
+      color: #de288f;
+    }
+
+    #replay-button {
+      background-color: #de288f ;
+      color: #fff;
+      padding: 15px 30px;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+
+    #winner-line {
+      margin-top: 20px;
+      border-bottom: 2px solid#de288f ;
+    }
+    #sp{
+            font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+            color: #de288f ;
+        }
+  </style>
+</head>
+<body>
+
+<div id="game-container">
+  <div id="sp">
+  <h2>Got It !</h2>
+  
+  <p id="current-player">Current Player: Player 1</p>
+  <p>Target: 23</p>
+  <p id="running-total">Running Total: 0</p>
+  <div>
+    <div class="label">Add to Total:</div>
+  </div>
+    <div class="number-square" onclick="makeMove(1)" id="square1">1</div>
+    <div class="number-square" onclick="makeMove(2)" id="square2">2</div>
+    <div class="number-square" onclick="makeMove(3)" id="square3">3</div>
+    <div class="number-square" onclick="makeMove(4)" id="square4">4</div>
+  </div>
+  <button id="replay-button" onclick="restartGame()">Replay</button>
+  <div id="winner-line"></div>
+  <div id="result"></div>
+</div>
+
+<script>
+  let currentPlayer = 1;
+  let previousPlayer = 2;
+  let runningTotal = 0;
+  const target = 23;
+
+  function makeMove(move) {
+    if (isValidMove(move)) {
+      runningTotal += move;
+      updateGameStatus();
+
+      if (runningTotal >= target) {
+        endGame();
+      } else {
+        switchPlayers();
+      }
+    } else {
+      alert('Invalid move. Please choose a number between 1 and 4.');
+    }
+  }
+
+  function isValidMove(move) {
+    return move >= 1 && move <= 4;
+  }
+
+  function updateGameStatus() {
+    document.getElementById('current-player').textContent = `Current Player: Player ${currentPlayer}`;
+    document.getElementById('running-total').textContent = `Running Total: ${runningTotal}`;
+  }
+
+  function switchPlayers() {
+    const temp = currentPlayer;
+    currentPlayer = previousPlayer;
+    previousPlayer = temp;
+  }
+
+  function endGame() {
+    document.getElementById('result').textContent = `Player ${previousPlayer} wins!`;
+    document.getElementById('replay-button').style.backgroundColor = ' #de288f'; 
+    document.getElementById('replay-button').style.color = '#fff';
+
+    
+    document.getElementById('winner-line').style.display = 'block';
+
+    
+    document.getElementById('winner-line').innerHTML = '';
+
+   
+  }
+
+  function restartGame() {
+    currentPlayer = 1;
+    previousPlayer = 2;
+    runningTotal = 0;
+    document.getElementById('result').textContent = '';
+    document.getElementById('replay-button').style.backgroundColor = ' #de288f'; 
+    document.getElementById('replay-button').style.color = '#fff';
+    document.getElementById('winner-line').style.display = 'none'; 
+    updateGameStatus();
+  }
+</script>
+
+</body>
+</html>

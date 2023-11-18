@@ -1,0 +1,87 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nim Game - Choose Opponent</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: url('v2.jpg') no-repeat center center fixed;
+            background-size: cover;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+       
+        #choose-opponent-container {
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            margin-bottom: 1px;
+
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+            display: flex;
+            flex-direction: column; 
+            align-items: center;
+            max-width: 60vw;
+            overflow: hidden; 
+            position: fixed; 
+            
+        }
+
+        .opponent-button {
+    width: 200px;
+    padding: 10px;
+    font-size: 16px;
+    margin: 10px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    background-color: rgba(0, 0, 0, 0.5);
+    border: 3px solid transparent; 
+    color: white;
+    transition: background-color 0.3s, border-color 0.3s; 
+}
+
+.opponent-button:hover,
+.opponent-button:active {
+    background-color: orange;
+    border-color: orange; 
+    color: white;
+}
+
+        #start{
+            font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+            color:#FFA500 ;
+        }
+    </style>
+    </style>
+</head>
+<body>
+    <div id="choose-opponent-container">
+        <div id="start">
+        <h1> Got It Game - Choose Opponent</h1>
+    </div>
+        <div class="opponent-button"  onclick="startClassicNim(1)">Play with Another Player</div>
+        <div class="opponent-button"  onclick="startClassicNim(2)">Play with Computer</div>
+    </div>
+
+    <script>
+        function startClassicNim(opponentChoice) {
+            if (opponentChoice === 1) {
+               
+                window.location.href = 'goto-tow players.html';
+            } else if (opponentChoice === 2) {
+                
+                window.location.href = 'got it-computer.html';
+            }
+        }
+    </script>
+</body>
+</html>
